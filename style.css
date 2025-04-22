@@ -1,19 +1,49 @@
+#root {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 24px; 
+  justify-items: center; 
+}
+
 .episode-card {
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 16px;
-  margin: 16px;
-  max-width: 300px;
+  max-width: 250px;
   text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
 }
 
 .episode-card img {
-  max-width: 100%;
+  height: auto; 
+  width: 100%; 
+  max-width: 200px; 
   border-radius: 4px;
+  margin-bottom: 12px; 
 }
 
 footer {
   margin-top: 20px;
   text-align: center;
   font-size: 0.9em;
+}
+
+#controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+#search-input,
+#episode-selector {
+  padding: 10px;
+  margin: 5px;
+  font-size: 16px;
+  width: 300px;
+}
+
+#search-result {
+  font-size: 14px;
+  color: #555;
 }

@@ -9,8 +9,14 @@
   </head>
 
   <body>
-    <div id="root">
+    <div id="controls">
+      <select id="episode-selector">
+        <option value="">Select an episode...</option>
+      </select>
+      <input type="text" id="search-input" placeholder="Search episodes..." />
+      <p id="search-result"></p>
     </div>
+    <div id="root"></div>
 
     <!-- Loads a provided function called getAllEpisodes() which returns all episodes -->
     <script src="episodes.js"></script>
