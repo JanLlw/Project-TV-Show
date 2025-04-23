@@ -13,13 +13,16 @@ function fetchShows() {
     return;
   }
 
+  displayLoadingMessage();
+
   fetch("https://api.tvmaze.com/shows")
     .then((response) => response.json())
     .then((shows) => {
       shows.forEach((show) => (showCache[show.id] = show));
       populateShowSelector(Object.values(showCache));
     })
-    .catch((error) => console.error("Error fetching shows:", error));
+    .catch((error) => displayError(`Error fetching shows: ${error.message}`))
+    .finally(removeLoadingMessage);
 }
 
 function populateShowSelector(shows) {
@@ -38,7 +41,6 @@ function populateShowSelector(shows) {
 
   showSelector.addEventListener("change", () => {
     const selectedShowId = showSelector.value;
-    console.log("Selected show ID:", selectedShowId); 
     if (selectedShowId) {
       fetchEpisodesForShow(selectedShowId);
     }
@@ -46,17 +48,47 @@ function populateShowSelector(shows) {
 }
 
 function fetchEpisodesForShow(showId) {
+  if (episodeCache[showId]) {
+    makePageForEpisodes(episodeCache[showId]);
+    setupEpisodeSelector(episodeCache[showId]);
+    setupSearch(episodeCache[showId]);
+    return;
+  }
+
+  displayLoadingMessage();
+
   fetch(`https://api.tvmaze.com/shows/${showId}/episodes`)
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to fetch episodes: ${response.statusText}`);
+      }
+      return response.json();
+    })
     .then((episodes) => {
-      console.log("Fetched episodes:", episodes); 
       episodeCache[showId] = episodes;
       makePageForEpisodes(episodes);
       setupEpisodeSelector(episodes);
       setupSearch(episodes);
     })
-    .catch((error) => console.error("Error fetching episodes:", error));
+    .catch((error) => displayError(`Error fetching episodes: ${error.message}`))
+    .finally(removeLoadingMessage);
 }
+
+function displayLoadingMessage() {
+  const rootElem = document.getElementById("root");
+  rootElem.innerHTML = "<p>Loading episodes, please wait...</p>";
+}
+
+function removeLoadingMessage() {
+  const rootElem = document.getElementById("root");
+  rootElem.innerHTML = "";
+}
+
+function displayError(errorMessage) {
+  const rootElem = document.getElementById("root");
+  rootElem.innerHTML = `<p style="color: red;">${errorMessage}</p>`;
+}
+
 
 function setupSearch(episodes) {
   const searchInput = document.getElementById("search-input");
@@ -111,7 +143,7 @@ function makePageForEpisodes(episodeList) {
     episodeCard.appendChild(title);
 
     const image = document.createElement("img");
-    image.src = episode.image.medium; 
+    image.src = episode.image.medium;
     image.alt = `${episode.name} image`;
     episodeCard.appendChild(image);
 
@@ -121,6 +153,10 @@ function makePageForEpisodes(episodeList) {
 
     rootElem.appendChild(episodeCard);
   });
+
+  const footer = document.createElement("footer");
+  footer.innerHTML = `Data originally from <a href="https://tvmaze.com/" target="_blank">TVMaze.com</a>`;
+  rootElem.appendChild(footer);
 }
 
 function formatEpisodeCode(season, number) {
