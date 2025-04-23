@@ -1,8 +1,49 @@
+let allEpisodes = []; 
+
 function setup() {
-  const allEpisodes = getAllEpisodes();
-  makePageForEpisodes(allEpisodes);
-  setupSearch(allEpisodes);
-  setupEpisodeSelector(allEpisodes);
+  fetchEpisodes()
+    .then((episodes) => {
+      allEpisodes = episodes; 
+      makePageForEpisodes(allEpisodes);
+      setupSearch(allEpisodes);
+      setupEpisodeSelector(allEpisodes);
+    })
+    .catch((error) => {
+      displayError(error.message); 
+    });
+}
+
+function fetchEpisodes() {
+  const url = "https://api.tvmaze.com/shows/82/episodes";
+  displayLoadingMessage(); 
+
+  return fetch(url)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to fetch episodes: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then(resolve)
+    .catch(reject)
+    .finally(() => {
+      removeLoadingMessage(); 
+    });
+}, 3000
+
+function displayLoadingMessage() {
+  const rootElem = document.getElementById("root");
+  rootElem.innerHTML = "<p>Loading episodes, please wait...</p>";
+}
+
+function removeLoadingMessage() {
+  const rootElem = document.getElementById("root");
+  rootElem.innerHTML = ""; 
+}
+
+function displayError(errorMessage) {
+  const rootElem = document.getElementById("root");
+  rootElem.innerHTML = `<p style="color: red;">Error: ${errorMessage}</p>`;
 }
 
 function setupSearch(allEpisodes) {
@@ -56,7 +97,7 @@ function makePageForEpisodes(episodeList) {
     episodeCard.appendChild(title);
 
     const image = document.createElement("img");
-    image.src = episode.image.medium; 
+    image.src = episode.image.medium;
     image.alt = `${episode.name} image`;
     episodeCard.appendChild(image);
 
@@ -66,6 +107,10 @@ function makePageForEpisodes(episodeList) {
 
     rootElem.appendChild(episodeCard);
   });
+
+  const footer = document.createElement("footer");
+  footer.innerHTML = `Data originally from <a href="https://tvmaze.com/" target="_blank">TVMaze.com</a>`;
+  rootElem.appendChild(footer);
 }
 
 function formatEpisodeCode(season, number) {
